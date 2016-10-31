@@ -9,6 +9,19 @@ mysql:
     ports:
         - "3000:3306"
 
+php56:
+    build: ./apps/php56
+    expose: 
+        - 9000
+    volumes:
+        - ./apps/php56/php-fpm.conf:/usr/local/etc/php-fpm.conf:ro
+        - ./apps/php56/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:ro
+        - ./htdocs:/data/htdocs
+        - ./logs:/data/logs
+    links:
+        - "mysql:mysql_service"
+        - "redis:redis_service"
+
 php7:
     build: ./apps/php7
     expose: 
@@ -40,8 +53,8 @@ nginx:
         - ./htdocs:/data/htdocs
         - ./logs:/data/logs
     links:
-        - "php7:php_service"
+        - "php56:php_service"
     expose:
         - 80
     ports:
-        - "8000:80"
+        - "80:80"
