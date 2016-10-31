@@ -1,4 +1,4 @@
 data
 logs
 htdocs
-nginx/conf/vhosts/*
+apps/nginx/vhosts/*

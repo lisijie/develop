@@ -10,21 +10,33 @@ mysql:
         - "3000:3306"
 
 php7:
-    build: ./php7
+    build: ./apps/php7
     expose: 
         - 9000
     volumes:
-        - ./php7/php-fpm.conf:/usr/local/etc/php-fpm.conf:ro
-        - ./php7/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:ro
+        - ./apps/php7/php-fpm.conf:/usr/local/etc/php-fpm.conf:ro
+        - ./apps/php7/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:ro
         - ./htdocs:/data/htdocs
         - ./logs:/data/logs
     links:
         - "mysql:mysql_service"
+        - "redis:redis_service"
+
+redis:
+    image: redis
+    expose:
+        - 6379
+    volumes:
+        - ./apps/redis/redis-6379.conf:/usr/local/etc/redis/redis.conf:ro
+    ports:
+        - "6379:6379"
 
 nginx:
     image: nginx
     volumes: 
-        - ./nginx/conf:/etc/nginx:ro
+        - ./apps/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+        - ./apps/nginx/fastcgi.conf:/etc/nginx/fastcgi.conf:ro
+        - ./apps/nginx/vhosts:/etc/nginx/vhosts:ro
         - ./htdocs:/data/htdocs
         - ./logs:/data/logs
     links:
