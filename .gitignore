@@ -1,0 +1,4 @@
+data
+logs
+htdocs
+nginx/conf/vhosts/*
