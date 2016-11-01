@@ -100,7 +100,7 @@ RUN mkdir -p /data/logs /data/htdocs; \
 	echo '<?php phpinfo();' > /data/htdocs/index.php
 
 # 清理数据
-RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false gcc wget
+# RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false gcc wget
 
 ############# 安装supervisor #############	
 
