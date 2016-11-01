@@ -23,5 +23,12 @@ $ docker build nginx_php apps/nginx_php/
 ## 启动
 
 ```bash
-$ docker run nginx_php
+$ docker run -p 8000:80 -v /data/htdocs:/data/htdocs -v /data/logs:/data/logs nginx_php
 ```
+
+参数说明：
+
+* -p 8000:80 将容器的80端口映射到本机的8000端口
+* -v /data/htdocs:/data/htdocs 将本机的 /data/htdocs 目录挂载到容器的 /data/htdocs 目录
+
+最后打开浏览器访问 http://localhost:8000
