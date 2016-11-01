@@ -9,32 +9,6 @@ mysql:
     ports:
         - "3000:3306"
 
-php56:
-    build: ./apps/php56
-    expose: 
-        - 9000
-    volumes:
-        - ./apps/php56/php-fpm.conf:/usr/local/etc/php-fpm.conf:ro
-        - ./apps/php56/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:ro
-        - ./htdocs:/data/htdocs
-        - ./logs:/data/logs
-    links:
-        - "mysql:mysql_service"
-        - "redis:redis_service"
-
-php7:
-    build: ./apps/php7
-    expose: 
-        - 9000
-    volumes:
-        - ./apps/php7/php-fpm.conf:/usr/local/etc/php-fpm.conf:ro
-        - ./apps/php7/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:ro
-        - ./htdocs:/data/htdocs
-        - ./logs:/data/logs
-    links:
-        - "mysql:mysql_service"
-        - "redis:redis_service"
-
 redis:
     image: redis
     expose:
@@ -44,17 +18,16 @@ redis:
     ports:
         - "6379:6379"
 
-nginx:
-    image: nginx
+nginx_php:
+    build: ./apps/nginx_php
     volumes: 
-        - ./apps/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-        - ./apps/nginx/fastcgi.conf:/etc/nginx/fastcgi.conf:ro
-        - ./apps/nginx/vhosts:/etc/nginx/vhosts:ro
+        - ./config/vhosts:/etc/nginx/vhosts:ro 
         - ./htdocs:/data/htdocs
         - ./logs:/data/logs
     links:
-        - "php56:php_service"
+        - "mysql:mysql_service"
+        - "redis:redis_service"
     expose:
         - 80
     ports:
-        - "80:80"
+        - "8000:80"

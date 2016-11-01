@@ -86,17 +86,20 @@ RUN cd /usr/src/php \
 # 复制配置文件
 COPY php-fpm.conf $PHP_INI_DIR/php-fpm.conf
 COPY php.ini $PHP_INI_DIR/php.ini
+COPY xdebug.ini $PHP_INI_DIR/conf.d/xdebug.ini
 
-# 安装redis扩展
+# 安装redis,xdebug扩展
 RUN pecl install redis-2.2.8 \
+	&& pecl install xdebug \
 	&& echo 'extension=redis.so' >  $PHP_INI_DIR/conf.d/redis.ini \
 	&& rm -rf /tmp/pear
 
 # 创建数据目录
-RUN mkdir -p /data/logs /data/htdocs
+RUN mkdir -p /data/logs /data/htdocs; \
+	echo '<?php phpinfo();' > /data/htdocs/index.php
 
 # 清理数据
-# RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false gcc wget
+RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false gcc wget
 
 ############# 安装supervisor #############	
 
