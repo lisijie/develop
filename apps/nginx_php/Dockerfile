@@ -1,9 +1,11 @@
 FROM nginx
 
+############# 配置nginx #############
+
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY fastcgi.conf /etc/nginx/fastcgi.conf
 
-############# 安装PHP 5.6 ####################
+############# 安装PHP 5.6 #############
 
 # PHP版本
 ENV PHP_VERSION 5.6.27
@@ -11,8 +13,9 @@ ENV PHP_VERSION 5.6.27
 # PHP源码下载地址
 ENV PHP_URL="https://secure.php.net/get/php-${PHP_VERSION}.tar.xz/from/this/mirror"
 
-# php.ini路径
-ENV PHP_INI_DIR /usr/local/etc/php
+# php配置文件路径
+ENV PHP_INI_DIR /usr/local/etc
+RUN mkdir -p $PHP_INI_DIR/conf.d
 
 # 安装依赖库
 RUN apt-get update && apt-get install -y \
@@ -38,15 +41,16 @@ RUN apt-get update && apt-get install -y \
 		libxml2-dev \
 		mcrypt \
 		libmcrypt-dev \
-	--no-install-recommends && rm -r /var/lib/apt/lists/*
+		libjpeg-dev \
+		libpng-dev \
+		libfreetype6-dev \
+	--no-install-recommends
 
-# 下载PHP源码
-RUN mkdir -p /usr/src/php/conf.d; \
+# 下载PHP并解压源码
+RUN mkdir -p /usr/src/php; \
 	cd /usr/src; \
-	wget -O php.tar.xz "$PHP_URL";
-
-# 解压源码
-RUN tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1
+	wget -O php.tar.xz "$PHP_URL"; \
+	tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1
 
 # 编译PHP并安装
 RUN cd /usr/src/php \
@@ -71,29 +75,43 @@ RUN cd /usr/src/php \
 		--enable-opcache \
 		--with-openssl \
 		--enable-pcntl \
+		--with-gd \
 		--with-fpm-user=www-data \
 		--with-fpm-group=www-data \
 	&& make \
 	&& make install \
-	&& make clean
+	&& make clean \
+	&& rm -rf /usr/src/php
 
 # 复制配置文件
-COPY php-fpm.conf /usr/local/etc/php-fpm.conf
-COPY php.ini /usr/local/etc/php.ini
+COPY php-fpm.conf $PHP_INI_DIR/php-fpm.conf
+COPY php.ini $PHP_INI_DIR/php.ini
 
 # 安装redis扩展
 RUN pecl install redis-2.2.8 \
-	&& echo 'extension=redis.so' >  /usr/src/php/conf.d/redis.ini
+	&& echo 'extension=redis.so' >  $PHP_INI_DIR/conf.d/redis.ini \
+	&& rm -rf /tmp/pear
 
 # 创建数据目录
-RUN mkdir -p /data/logs \
-	&& mkdir -p /data/htdocs
+RUN mkdir -p /data/logs /data/htdocs
+
+# 清理数据
+# RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false gcc wget
+
+############# 安装supervisor #############	
+
+RUN apt-get update && apt-get install -y --no-install-recommends supervisor \
+	&& rm -r /var/lib/apt/lists/*
+
+COPY supervisord.conf /etc/supervisor/supervisord.conf
+
+############# 其他配置&启动命令 #############
 
 # 工作目录
 WORKDIR /data/htdocs
 
 # 导出端口
-EXPOSE 80 9000
+EXPOSE 80
 
 # 启动命令
-CMD ["php-fpm && nginx", "-g", "daemon off;"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
