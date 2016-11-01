@@ -44,7 +44,8 @@ RUN apt-get update && apt-get install -y \
 		libjpeg-dev \
 		libpng-dev \
 		libfreetype6-dev \
-	--no-install-recommends
+	--no-install-recommends \
+	&& rm -r /var/lib/apt/lists/*
 
 # 下载PHP并解压源码
 RUN mkdir -p /usr/src/php; \
