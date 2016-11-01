@@ -8,7 +8,13 @@
 - htdocs web程序代码目录
 - logs 日志目录，用来保存 nginx、php 等应用产生的日志
 
+## 安装
+
+docker安装见https://www.docker.com/products/overview
+
 ## 启动
+
+进入项目目录develop。
 
 前台运行：
 
