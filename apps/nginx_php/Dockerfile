@@ -2,11 +2,6 @@ FROM nginx
 
 MAINTAINER lisijie lsj86@qq.com
 
-############# 配置nginx #############
-
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY fastcgi.conf /etc/nginx/fastcgi.conf
-
 ############# 安装PHP 5.6 #############
 
 # PHP版本
@@ -53,7 +48,8 @@ RUN apt-get update && apt-get install -y \
 RUN mkdir -p /usr/src/php; \
 	cd /usr/src; \
 	wget -O php.tar.xz "$PHP_URL"; \
-	tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1
+	tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1 \
+	rm -f php.tar.xz
 
 # 编译PHP并安装
 RUN cd /usr/src/php \
@@ -86,11 +82,6 @@ RUN cd /usr/src/php \
 	&& make clean \
 	&& rm -rf /usr/src/php
 
-# 复制配置文件
-COPY php-fpm.conf $PHP_INI_DIR/php-fpm.conf
-COPY php.ini $PHP_INI_DIR/php.ini
-COPY xdebug.ini $PHP_INI_DIR/conf.d/xdebug.ini
-
 # 安装redis,xdebug扩展
 RUN pecl install redis-2.2.8 \
 	&& pecl install xdebug \
@@ -102,7 +93,34 @@ RUN mkdir -p /data/logs /data/htdocs; \
 	echo '<?php phpinfo();' > /data/htdocs/index.php
 
 # 清理数据
-# RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false gcc wget
+RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+	wget \
+	autoconf \
+	file \
+	g++ \
+	gcc \
+	libc-dev \
+	make \
+	pkg-config \
+	re2c \
+	ca-certificates \
+	curl \
+	xz-utils \
+	libedit-dev \
+	libsqlite3-dev \
+	libssl-dev \
+	libxml2-dev \
+	libmcrypt-dev \
+	libjpeg-dev \
+	libpng-dev \
+	libfreetype6-dev
+
+############# 复制配置文件 #############
+
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY fastcgi.conf /etc/nginx/fastcgi.conf
+COPY php-fpm.conf $PHP_INI_DIR/php-fpm.conf
+COPY php.ini $PHP_INI_DIR/php.ini
 
 ############# 安装supervisor #############	
 
@@ -120,4 +138,6 @@ WORKDIR /data/htdocs
 EXPOSE 80
 
 # 启动命令
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+COPY startup.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/startup.sh
+CMD ["startup.sh"]
