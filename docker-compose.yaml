@@ -22,9 +22,11 @@ nginx_php:
     build: ./apps/nginx_php
     volumes: 
         - ./config/vhosts:/etc/nginx/vhosts:ro
-        - ./apps/nginx_php/xdebug.ini:/usr/local/etc/conf.d/xdebug.ini
-        - ./htdocs:/data/htdocs
+        - ./apps/nginx_php/php.ini:/usr/local/etc/php.ini
+        - /data/htdocs:/data/htdocs
         - ./logs:/data/logs
+    environment:
+        - XDEBUG_HOST
     links:
         - "mysql:mysql_service"
         - "redis:redis_service"

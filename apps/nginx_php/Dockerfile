@@ -14,23 +14,34 @@ ENV PHP_URL="https://secure.php.net/get/php-${PHP_VERSION}.tar.xz/from/this/mirr
 ENV PHP_INI_DIR /usr/local/etc
 RUN mkdir -p $PHP_INI_DIR/conf.d
 
-# 安装依赖库
+# 下载PHP并解压源码
+RUN apt-get update && apt-get install -y --no-install-recommends wget xz-utils; \
+	mkdir -p /usr/src/php; \
+	cd /usr/src; \
+	wget -O php.tar.xz "$PHP_URL"; \
+	tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1; \
+	rm -f php.tar.xz; \
+	rm -r /var/lib/apt/lists/*; \
+	apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false wget xz-utils
+
+# 编译安装PHP, 并安装redis,xdebug扩展
+ENV PHPIZE_DEPS \
+	autoconf \
+	file \
+	g++ \
+	gcc \
+	libc-dev \
+	make \
+	pkg-config \
+	re2c \
+	ca-certificates \
+	curl \
+	libsqlite3-0
+
 RUN apt-get update && apt-get install -y \
-		wget \
-		autoconf \
-		file \
-		g++ \
-		gcc \
-		libc-dev \
-		make \
-		pkg-config \
-		re2c \
-		ca-certificates \
-		curl \
+		$PHPIZE_DEPS \
 		libedit2 \
-		libsqlite3-0 \
 		libxml2 \
-		xz-utils \
 		libcurl4-openssl-dev \
 		libedit-dev \
 		libsqlite3-dev \
@@ -42,17 +53,8 @@ RUN apt-get update && apt-get install -y \
 		libpng-dev \
 		libfreetype6-dev \
 	--no-install-recommends \
-	&& rm -r /var/lib/apt/lists/*
-
-# 下载PHP并解压源码
-RUN mkdir -p /usr/src/php; \
-	cd /usr/src; \
-	wget -O php.tar.xz "$PHP_URL"; \
-	tar -Jxf /usr/src/php.tar.xz -C /usr/src/php --strip-components=1 \
-	rm -f php.tar.xz
-
-# 编译PHP并安装
-RUN cd /usr/src/php \
+	&& rm -r /var/lib/apt/lists/* \
+	&& cd /usr/src/php \
 	&& ./configure \
 		--with-config-file-path="$PHP_INI_DIR" \
 		--with-config-file-scan-dir="$PHP_INI_DIR/conf.d" \
@@ -80,40 +82,16 @@ RUN cd /usr/src/php \
 	&& make \
 	&& make install \
 	&& make clean \
-	&& rm -rf /usr/src/php
-
-# 安装redis,xdebug扩展
-RUN pecl install redis-2.2.8 \
+	&& pecl install redis-2.2.8 \
 	&& pecl install xdebug \
 	&& echo 'extension=redis.so' >  $PHP_INI_DIR/conf.d/redis.ini \
-	&& rm -rf /tmp/pear
+	&& rm -rf /tmp/pear \
+	&& rm -rf /usr/src/php \
+	&& apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $PHPIZE_DEPS
 
 # 创建数据目录
 RUN mkdir -p /data/logs /data/htdocs; \
 	echo '<?php phpinfo();' > /data/htdocs/index.php
-
-# 清理数据
-RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-	wget \
-	autoconf \
-	file \
-	g++ \
-	gcc \
-	libc-dev \
-	make \
-	pkg-config \
-	re2c \
-	ca-certificates \
-	curl \
-	xz-utils \
-	libedit-dev \
-	libsqlite3-dev \
-	libssl-dev \
-	libxml2-dev \
-	libmcrypt-dev \
-	libjpeg-dev \
-	libpng-dev \
-	libfreetype6-dev
 
 ############# 复制配置文件 #############
 
