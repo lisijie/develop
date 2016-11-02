@@ -34,3 +34,8 @@ $ docker-compose up -d
 $ docker-compose down
 ```
 
+## xdebug配置
+
+由于在容器里面无法直接获取到宿主机的IP地址。因此在如果要使用xdebug调试的话需要配置xdebug.ini的 xdebug.remote_host 为你物理机的IP地址。
+
+	xdebug.remote_host = 192.168.1.2

@@ -1,5 +1,7 @@
 FROM nginx
 
+MAINTAINER lisijie lsj86@qq.com
+
 ############# 配置nginx #############
 
 COPY nginx.conf /etc/nginx/nginx.conf
