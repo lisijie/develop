@@ -102,10 +102,10 @@ COPY php.ini $PHP_INI_DIR/php.ini
 
 ############# 安装supervisor #############	
 
-RUN apt-get update && apt-get install -y --no-install-recommends supervisor \
-	&& rm -r /var/lib/apt/lists/*
-
-COPY supervisord.conf /etc/supervisor/supervisord.conf
+#RUN apt-get update && apt-get install -y --no-install-recommends supervisor \
+#	&& rm -r /var/lib/apt/lists/*
+#
+#COPY supervisord.conf /etc/supervisor/supervisord.conf
 
 ############# 其他配置&启动命令 #############
 
