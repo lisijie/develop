@@ -23,7 +23,7 @@ nginx_php:
     volumes: 
         - ./config/vhosts:/etc/nginx/vhosts:ro
         - ./apps/nginx_php/php.ini:/usr/local/etc/php.ini
-        - /data/htdocs:/data/htdocs
+        - ./htdocs:/data/htdocs
         - ./logs:/data/logs
     environment:
         - XDEBUG_HOST
