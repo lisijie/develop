@@ -14,9 +14,10 @@ redis:
     expose:
         - 6379
     volumes:
-        - ./apps/redis/redis-6379.conf:/usr/local/etc/redis/redis.conf:ro
+        - ./apps/redis/redis-6379.conf:/usr/local/etc/redis.conf:ro
     ports:
         - "6379:6379"
+    command: /usr/local/etc/redis.conf
 
 nginx_php:
     build: ./apps/nginx_php
